@@ -8,13 +8,13 @@ def thread(num):
     print("Thread End {}".format(num))
 
 
-def bad_sample():
-    for i in range(300):
-        threading.Thread(target=thread(i)).start()
+def sample():
+    for i in range(1, 4):
+        threading.Thread(target=thread, name="th", args=(i,)).start()
 
 
 def main():
-    pass
+    sample()
 
 
 if __name__ == '__main__':
