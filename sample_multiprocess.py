@@ -48,10 +48,36 @@ def f2():
         logging.debug([i for i in r])
 
 
+def lock_process(data, lock):
+    logging.debug(id(data))
+    with lock:
+        i = data['x']
+        time.sleep(2)
+        data['x'] = i + 1
+    logging.debug(str(data) + str(id(data)))
+
+
+def sample_lock():
+    data = {'x': 0}
+    print('data id :', id(data))
+    lock = multiprocessing.Lock()
+    # data is not shared , but id is the same.
+    t1 = multiprocessing.Process(target=lock_process, args=(data, lock))
+    t2 = multiprocessing.Process(target=lock_process, args=(data, lock))
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+    logging.debug(str(data) + str(id(data)))
+
+
 def main():
     # f()
-    f2()
-
+    # f2()
+    sample_lock()
 
 if __name__ == '__main__':
     main()
