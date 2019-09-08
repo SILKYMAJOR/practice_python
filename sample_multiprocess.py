@@ -74,10 +74,85 @@ def sample_lock():
     logging.debug(str(data) + str(id(data)))
 
 
+def process_pipe(conn):
+    conn.send(['message'])
+    time.sleep(5)
+    conn.close()
+
+
+def sample_pipe():
+    parent_conn, child_conn = multiprocessing.Pipe()
+    p = multiprocessing.Process(target=process_pipe, args=(parent_conn, ))
+    p.start()
+    logging.debug(child_conn.recv())
+
+
+def process_value_array(num, arr):
+    logging.debug(num)
+    num.value += 1.0
+    logging.debug(arr)
+    for i in range(len(arr)):
+        arr[i] *= 2
+
+
+def sample_value_array():
+    num = multiprocessing.Value('f', 0.0)
+    arr = multiprocessing.Array('i', [1, 2, 3, 4, 5])
+
+    p1 = multiprocessing.Process(target=process_value_array, args=(num, arr))
+    p2 = multiprocessing.Process(target=process_value_array, args=(num, arr))
+
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
+
+    logging.debug(num.value)
+    logging.debug(arr[:])
+
+
+def process_manager(l, d, n):
+    l.reverse()
+    d['x'] += 1
+    n.y += 1
+
+
+def sample_manager():
+    # Manager is later than Value, Array.
+    with multiprocessing.Manager()as manager:
+        l = manager.list()
+        d = manager.dict()
+        n = manager.Namespace()
+
+        l.append(1)
+        l.append(2)
+        l.append(3)
+        d['x'] = 0
+        n.y = 0
+
+        p1 = multiprocessing.Process(target=process_manager, args=(l, d, n))
+        p2 = multiprocessing.Process(target=process_manager, args=(l, d, n))
+
+        p1.start()
+        p2.start()
+
+        p1.join()
+        p2.join()
+
+        logging.debug(l)
+        logging.debug(d)
+        logging.debug(n)
+
+
 def main():
     # f()
     # f2()
-    sample_lock()
+    # sample_lock()
+    # sample_pipe()
+    # sample_value_array()
+    sample_manager()
+
 
 if __name__ == '__main__':
     main()
